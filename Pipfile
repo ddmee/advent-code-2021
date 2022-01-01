@@ -4,8 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+altair = "*"
+jupyterlab = "*"
+pandas = "*"
 
 [dev-packages]
+black = "==21.12b0"
 
 [requires]
 python_version = "3.9"

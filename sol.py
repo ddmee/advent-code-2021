@@ -163,7 +163,44 @@ class Day2(Day):
         return self.finalise(x, y)
 
 
+class Day3:
+    def __init__(self) -> None:
+        self.day = 3
+
+    @staticmethod
+    def parser(line: str) -> list[int]:
+        line = line.strip()
+        return [int(char) for char in line]
+
+    def part1(self) -> int:
+        lines = _get_lines(day=self.day, parser=self.parser)
+        most_common = ""
+        least_common = ""
+        for col in range(len(lines[0])):
+            tot = sum([row[col] for row in lines])
+            if tot > len(lines) // 2:
+                most_common += "1"
+                least_common += "0"
+            elif tot < len(lines) // 2:
+                most_common += "0"
+                least_common += "1"
+            else:
+                raise RuntimeError("unexpected total")
+        gamma = int(most_common, 2)
+        epsilon = int(least_common, 2)
+        power = gamma * epsilon
+        return power
+
+    def part2(self) -> None:
+        return None
+
+    def sol(self) -> None:
+        print("Day {0}".format(self.day))
+        print("part 1: {0}".format(self.part1()))
+        print("part 2: {0}".format(self.part2()))
+
+
 if __name__ == "__main__":
-    days = (Day1(), Day2())
+    days = (Day1(), Day2(), Day3())
     for d in days:
         d.sol()

@@ -105,7 +105,9 @@ class Day2(Day):
             y -= move[1]
         return x, y
 
-    def move_v2(self, move: tuple[str, int], x: int, y: int, aim: int) -> tuple[int, int]:
+    def move_v2(
+        self, move: tuple[str, int], x: int, y: int, aim: int
+    ) -> tuple[int, int]:
         """down X increases your aim by X units.
         up X decreases your aim by X units.
         forward X does two things:
@@ -115,7 +117,7 @@ class Day2(Day):
         self.aims.append(aim)
         if move[0] == "forward":
             x += move[1]
-            y -= (move[1] * aim)
+            y -= move[1] * aim
         elif move[0] == "up":
             aim -= move[1]
         elif move[0] == "down":
@@ -123,9 +125,12 @@ class Day2(Day):
         return x, y, aim
 
     def process_moves(
-        self, moves: list[tuple[str, int]], x: int = 0, y: int = 0,
+        self,
+        moves: list[tuple[str, int]],
+        x: int = 0,
+        y: int = 0,
         aim: int = None,
-        move_fnc: Callable = None
+        move_fnc: Callable = None,
     ) -> tuple[int, int]:
         """Iterate through a list of moves starting from an x and y
         Returns final x,y position and logs all positions on self.x/y

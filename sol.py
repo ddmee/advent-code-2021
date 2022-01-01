@@ -86,6 +86,7 @@ class Day2(Day):
     def __init__(self) -> None:
         self.day = 2
         self.moves: list[tuple[str, int]] = []
+        self.aims: list[int] = []
         self.positions: list[tuple[int, int]] = []
 
     @staticmethod
@@ -95,7 +96,7 @@ class Day2(Day):
         return tokes[0], int(tokes[1])
 
     @staticmethod
-    def move(move: tuple[str, int], x: int, y: int) -> tuple[int, int]:
+    def move_v1(move: tuple[str, int], x: int, y: int) -> tuple[int, int]:
         if move[0] == "forward":
             x += move[1]
         elif move[0] == "up":
@@ -104,15 +105,39 @@ class Day2(Day):
             y -= move[1]
         return x, y
 
+    def move_v2(self, move: tuple[str, int], x: int, y: int, aim: int) -> tuple[int, int]:
+        """down X increases your aim by X units.
+        up X decreases your aim by X units.
+        forward X does two things:
+        increases your horizontal position by X units.
+        increases your depth by your aim multiplied by X.
+        """
+        self.aims.append(aim)
+        if move[0] == "forward":
+            x += move[1]
+            y -= (move[1] * aim)
+        elif move[0] == "up":
+            aim -= move[1]
+        elif move[0] == "down":
+            aim += move[1]
+        return x, y, aim
+
     def process_moves(
-        self, moves: list[tuple[str, int]], x: int = 0, y: int = 0
+        self, moves: list[tuple[str, int]], x: int = 0, y: int = 0,
+        aim: int = None,
+        move_fnc: Callable = None
     ) -> tuple[int, int]:
         """Iterate through a list of moves starting from an x and y
         Returns final x,y position and logs all positions on self.x/y
         """
+        if move_fnc is None:
+            move_fnc = self.move_v1
         for move in moves:
             self.positions.append((x, y))
-            x, y = self.move(move=move, x=x, y=y)
+            if aim is not None:
+                x, y, aim = move_fnc(move=move, x=x, y=y, aim=aim)
+            else:
+                x, y = move_fnc(move=move, x=x, y=y)
         return x, y
 
     def load_moves(self) -> None:
@@ -125,6 +150,11 @@ class Day2(Day):
     def part1(self) -> int:
         self.load_moves()
         x, y = self.process_moves(moves=self.moves)
+        return self.finalise(x, y)
+
+    def part2(self) -> int:
+        self.load_moves()
+        x, y = self.process_moves(moves=self.moves, move_fnc=self.move_v2, aim=0)
         return self.finalise(x, y)
 
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 
 def _get_lines(day: int, parser: Callable = str) -> list[int]:
@@ -163,7 +163,7 @@ class Day2(Day):
         return self.finalise(x, y)
 
 
-class Day3:
+class Day3(Day):
     def __init__(self) -> None:
         self.day = 3
 
@@ -256,13 +256,140 @@ class Day3:
         co2 = "".join(map(str, co2))
         return int(o2, 2) * int(co2, 2)
 
-    def sol(self) -> None:
-        print("Day {0}".format(self.day))
-        print("part 1: {0}".format(self.part1()))
-        print("part 2: {0}".format(self.part2()))
+
+class BingoBoard:
+    def __init__(self, board: list[list[int]], width=5, height=5, num: int = 0) -> None:
+        self.num = num
+        assert len(board) == height
+        for col in board:
+            assert len(col) == width
+        self.board = board  # grid of bingo numbers
+        self.marks = []  # grid of marks for each square in the bingo board
+        for row in board:
+            self.marks.append([False for _ in range(width)])
+
+    def mark(self, number: int) -> None:
+        for row_idx, row in enumerate(self.board):
+            for col_idx, col in enumerate(row):
+                if col == number:
+                    self.marks[row_idx][col_idx] = True
+
+    def indexs(self) -> list[tuple[int, int]]:
+        indxs = []
+        for row_idx, row in enumerate(self.board):
+            for col_idx, col in enumerate(row):
+                indxs.append((row_idx, col_idx))
+        return indxs
+
+    def numbers(self) -> list:
+        numbers = []
+        for row_idx, col_idx in self.indexs():
+            numbers.append(
+                [
+                    row_idx,
+                    col_idx,
+                    self.board[row_idx][col_idx],
+                    self.marks[row_idx][col_idx],
+                ]
+            )
+        return numbers
+
+    def __str__(self):
+        out = ""
+        last_row_idx = 0
+        for row_idx, col_idx, num, marked in self.numbers():
+            if row_idx > last_row_idx:
+                last_row_idx = row_idx
+                out += "\n"  # newline
+            out += "{0:2},{1}|".format(num, "X" if marked else "_")
+        return out
+
+    def row_bingo(self) -> Union[None, int]:
+        for row_idx, row in enumerate(self.marks):
+            if all(col for col in row):
+                return row_idx
+        else:
+            return None
+
+    def col_bingo(self) -> Union[None, int]:
+        for col_idx in range(len(self.board[0])):  # width
+            # len(self.board) == height
+            if all(
+                [self.marks[row_idx][col_idx] for row_idx in range(len(self.board))]
+            ):
+                return col_idx
+        else:
+            return None
+
+    def bingo(self) -> Union[None, int]:
+        return self.col_bingo() is not None or self.row_bingo() is not None
+
+
+class Day4(Day):
+    def __init__(self):
+        # self.day = '4_example'
+        self.day = 4
+
+    def get_marks(self) -> list[int]:
+        lines = _get_lines(day=self.day, parser=str)
+        marks = lines[0].split(",")
+        return [int(m) for m in marks]
+
+    def get_boards(self) -> list[BingoBoard]:
+        lines = _get_lines(day=self.day, parser=str)
+        end = len(lines)
+        i = 1  # discard first line
+        boards = []
+        while i < end:
+            board_lines = lines[i + 1 : i + 6]  # first line is empty
+            rows = []
+            for line in board_lines:
+                tokes = line.split(" ")
+                tokes = filter(lambda x: x.strip(), tokes)
+                row = [int(toke) for toke in tokes]
+                rows.append(row)
+            boards.append(BingoBoard(board=rows, num=len(boards)))
+            i += 6
+
+        return boards
+
+    def part1(self):
+        marks, boards = self.get_marks(), self.get_boards()
+        for mark in marks:
+            # print("=======Marking {0}========".format(mark))
+            for b in boards:
+                b.mark(mark)
+                # print(b)
+                # print("-" * 20)
+                if b.bingo():
+                    print("******Winner Board {0}********".format(b.num))
+                    unmarked = [n[2] for n in b.numbers() if not n[3]]
+                    return sum(unmarked) * mark
+        else:
+            return "no bingo"
+
+    def part2(self):
+        marks, boards = self.get_marks(), self.get_boards()
+        board_order = []
+        for mark in marks:
+            # print("=======Marking {0}========".format(mark))
+            for b in boards:
+                b.mark(mark)
+                # print(b)
+                # print("-" * 20)
+                if b.bingo() and b.num not in board_order:
+                    board_order.append(b.num)
+                    # print("~~Bingo on Board {0}~~".format(b.num))
+            if len(board_order) == len(boards):
+                last_board = boards[board_order[-1]]
+                print("******Last Board {0}******".format(last_board.num))
+                unmarked = [n[2] for n in last_board.numbers() if not n[3]]
+                return sum(unmarked) * mark
+        else:
+            return "No bingo or len(board_order) < len(boards)"
 
 
 if __name__ == "__main__":
-    days = (Day1(), Day2(), Day3())
+    days = (Day1(), Day2(), Day3(), Day4())
     for d in days:
         d.sol()

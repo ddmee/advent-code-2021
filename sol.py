@@ -169,6 +169,8 @@ class Day3:
 
     @staticmethod
     def parser(line: str) -> list[int]:
+        # norvig chooses not to parse as ints keeps them as strs which
+        # probably helps him a bit, less conversion code
         line = line.strip()
         return [int(char) for char in line]
 
@@ -176,6 +178,8 @@ class Day3:
         return _get_lines(day=self.day, parser=self.parser)
 
     def most_least(self, lines) -> tuple[str, str]:
+        # norvig uses pythons str.count inbuilt to do a neater job of
+        # this function...
         most_common = ""
         least_common = ""
         for col in range(len(lines[0])):
@@ -214,12 +218,16 @@ class Day3:
                 least_common += "0"
         return most_common, least_common
 
-    def filter(self, lines:list[list[int]], idx:int, predicate:Callable) -> list[list[int]]:
+    def filter(
+        self, lines: list[list[int]], idx: int, predicate: Callable
+    ) -> list[list[int]]:
         pattern = predicate(lines)
         lines = list(filter(lambda l: l[idx] == int(pattern[idx]), lines))
         return lines
 
-    def filter_loop(self, lines:list[list[int]], predicate:Callable) -> list[int]:
+    def filter_loop(self, lines: list[list[int]], predicate: Callable) -> list[int]:
+        # norvig makes this a recursive loop, with index being fed into
+        # the recursive call each time with += 1
         width = len(lines[0])
         for idx in range(width):
             lines = self.filter(lines, idx, predicate)
@@ -227,9 +235,9 @@ class Day3:
                 result = lines[0]
                 break
             elif len(lines) == 0:
-                raise RuntimeError('Run out of lines!')
+                raise RuntimeError("Run out of lines!")
         else:
-            raise RuntimeError('Ran out of width?')
+            raise RuntimeError("Ran out of width?")
         return result
 
     def part2(self) -> int:

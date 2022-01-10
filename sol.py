@@ -172,8 +172,10 @@ class Day3:
         line = line.strip()
         return [int(char) for char in line]
 
-    def part1(self) -> int:
-        lines = _get_lines(day=self.day, parser=self.parser)
+    def lines(self) -> list[int]:
+        return _get_lines(day=self.day, parser=self.parser)
+
+    def most_least(self, lines) -> tuple[str, str]:
         most_common = ""
         least_common = ""
         for col in range(len(lines[0])):
@@ -186,13 +188,65 @@ class Day3:
                 least_common += "1"
             else:
                 raise RuntimeError("unexpected total")
+        return most_common, least_common
+
+    def part1(self) -> int:
+        lines = self.lines()
+        most_common, least_common = self.most_least(lines=lines)
         gamma = int(most_common, 2)
         epsilon = int(least_common, 2)
         power = gamma * epsilon
         return power
 
-    def part2(self) -> None:
-        return None
+    def part2_common(self, lines):
+        most_common = ""
+        least_common = ""
+        for col in range(len(lines[0])):
+            tot = sum([row[col] for row in lines])
+            if tot > len(lines) / 2:
+                most_common += "1"
+                least_common += "0"
+            elif tot < len(lines) / 2:
+                most_common += "0"
+                least_common += "1"
+            else:
+                most_common += "1"
+                least_common += "0"
+        return most_common, least_common
+
+    def filter(self, lines:list[list[int]], idx:int, predicate:Callable) -> list[list[int]]:
+        pattern = predicate(lines)
+        lines = list(filter(lambda l: l[idx] == int(pattern[idx]), lines))
+        return lines
+
+    def filter_loop(self, lines:list[list[int]], predicate:Callable) -> list[int]:
+        width = len(lines[0])
+        for idx in range(width):
+            lines = self.filter(lines, idx, predicate)
+            if len(lines) == 1:
+                result = lines[0]
+                break
+            elif len(lines) == 0:
+                raise RuntimeError('Run out of lines!')
+        else:
+            raise RuntimeError('Ran out of width?')
+        return result
+
+    def part2(self) -> int:
+        lines = _get_lines(day=self.day, parser=self.parser)
+
+        def most_common(lines):
+            return self.part2_common(lines)[0]
+
+        def least_common(lines):
+            return self.part2_common(lines)[1]
+
+        o2 = self.filter_loop(lines, most_common)
+        co2 = self.filter_loop(lines, least_common)
+        # rejoin to ints, still binary
+        o2 = "".join(map(str, o2))
+        co2 = "".join(map(str, co2))
+        return int(o2, 2) * int(co2, 2)
 
     def sol(self) -> None:
         print("Day {0}".format(self.day))

@@ -326,6 +326,11 @@ class BingoBoard:
 
 
 class Day4(Day):
+    # norvigs approach is quite different. He just treats the board as a flat
+    # list of 25 numbers. Then has a function that works out the vertical
+    # and horizontal line for any index. So, he avoids the 2d array.
+    # Then he uses a set for the drawn numbers, and feeds the entire set into
+    # a function that calculates whether the boards are now complete.
     def __init__(self):
         # self.day = '4_example'
         self.day = 4
